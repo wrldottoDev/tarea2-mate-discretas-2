@@ -1,0 +1,18 @@
+[
+  {
+    "name": "E-commerce",
+    "text": "Crea una arquitectura de microservicios para un e-commerce con procesamiento de pagos, inventario y notificaciones en tiempo real"
+  },
+  {
+    "name": "Pipeline de datos",
+    "text": "Diseña un pipeline nocturno de datos: ingesta desde 3 APIs externas con el mismo límite de tasa, limpieza, deduplicación, carga a un data warehouse, recalcular reportes de ventas y enviar un resumen por correo. Varias tareas escriben en las mismas tablas."
+  },
+  {
+    "name": "Banca (no plano)",
+    "text": "Tres servicios bancarios (transferencias, préstamos y tarjetas) usan cada uno las mismas tres bases de datos compartidas: clientes, cuentas y auditoría. Cada servicio lee y escribe en las tres bases. No agregues ningún otro componente."
+  },
+  {
+    "name": "Hospital",
+    "text": "Plataforma hospitalaria: citas, expediente clínico, farmacia, laboratorio, facturación y notificaciones a pacientes. Farmacia y laboratorio comparten el inventario de insumos; facturación y citas usan la misma pasarela de cobro; todo pasa por un API gateway con autenticación."
+  }
+]

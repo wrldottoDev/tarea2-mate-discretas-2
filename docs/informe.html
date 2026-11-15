@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Informe Tarea 2 · GrafoOps</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Serif:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<style>
+@page{size:A4;margin:20mm 18mm 20mm 18mm}
+body{font:10.5pt/1.55 'IBM Plex Serif',Georgia,serif;color:#1a1f2b;margin:0}
+h1,h2,h3,h4{font-family:'IBM Plex Sans',sans-serif;color:#0f2a4a;line-height:1.25}
+h2{font-size:16pt;margin:26px 0 8px;border-bottom:2px solid #d8e2ef;padding-bottom:4px;break-after:avoid}
+h3{font-size:12.5pt;margin:18px 0 6px;break-after:avoid}
+p{margin:6px 0 8px;text-align:justify}
+code,.mono{font:9pt 'IBM Plex Mono',monospace;background:#f1f4f9;padding:0 3px;border-radius:3px}
+pre{font:8.6pt/1.45 'IBM Plex Mono',monospace;background:#f6f8fb;border:1px solid #dfe5ee;border-radius:6px;padding:9px 11px;white-space:pre-wrap;break-inside:avoid}
+table{border-collapse:collapse;width:100%;margin:8px 0 12px;font:9pt 'IBM Plex Sans',sans-serif;break-inside:avoid}
+th,td{border:1px solid #d5dce7;padding:4px 7px;text-align:left;vertical-align:top}
+th{background:#eef3f9;color:#0f2a4a}
+td.n,th.n{text-align:right}
+.cover{height:250mm;display:flex;flex-direction:column;justify-content:center;break-after:page;font-family:'IBM Plex Sans',sans-serif}
+.cover .u{font-size:13pt;color:#3d5a80;letter-spacing:1px;text-transform:uppercase}
+.cover h1{font-size:30pt;margin:26px 0 8px}
+.cover h1 span{display:block;font-size:15pt;font-weight:400;color:#3d5a80;margin-top:8px}
+.cover table{width:70%;margin-top:36px;font-size:10.5pt}
+.cover td{border:0;border-bottom:1px solid #d5dce7;padding:7px 4px}
+.cover td:first-child{color:#55657d;width:42%}
+.toc{break-after:page}
+.toc ol{font-family:'IBM Plex Sans';line-height:1.9}
+figure{margin:12px 0;break-inside:avoid;text-align:center}
+figure img{max-width:100%;border:1px solid #d5dce7;border-radius:6px}
+figcaption{font:9pt 'IBM Plex Sans';color:#55657d;margin-top:4px}
+.box{border:1px solid #cddcf0;border-radius:6px;background:#f5f8fd;padding:8px 12px;margin:10px 0;break-inside:avoid}
+.thm{border:1px solid #c7e4de;border-radius:6px;background:#f3faf8;padding:8px 12px;margin:10px 0;break-inside:avoid}
+.thm b:first-child{font-family:'IBM Plex Sans'}
+.mermaid{text-align:center;margin:10px auto;max-width:150mm}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+ul,ol{margin:4px 0 8px;padding-left:22px}
+li{margin:2px 0}
+.ref p{text-align:left;padding-left:22px;text-indent:-22px;font-size:9.5pt;margin:4px 0}
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="u">Universidad CENFOTEC · Escuela de Fundamentos</div>
+  <h1>GrafoOps: Motor IA de Planificación y Orquestación de Sistemas Basado en Grafos
+    <span>Documento de Investigación y Arquitectura · Tarea 2</span></h1>
+  <table>
+    <tr><td>Curso</td><td>FUN-03 · Matemática Discreta II</td></tr>
+    <tr><td>Sección / Periodo</td><td>FCP0 · C3-2026</td></tr>
+    <tr><td>Docente</td><td>Lic. Rebeca Chaves Morales</td></tr>
+    <tr><td>Integrantes</td><td>Integrante 1<br>Integrante 2<br>Integrante 3<br>Integrante 4</td></tr>
+    <tr><td>Repositorio</td><td class="mono">github.com/wrldottoDev/tarea2-mate-discretas-2</td></tr>
+    <tr><td>Fecha</td><td>Noviembre 2026</td></tr>
+  </table>
+</section>
+
+<section class="toc">
+  <h2>Contenido</h2>
+  <ol>
+    <li>Problemática e indagación</li>
+    <li>Marco teórico</li>
+    <li>Arquitectura del sistema</li>
+    <li>Módulo 1 · Representación programática del grafo</li>
+    <li>Módulo 2 · Coloración para asignación de recursos</li>
+    <li>Módulo 3 · Grafos planos y diagramación</li>
+    <li>Módulo 4 · Capa de inteligencia artificial generativa</li>
+    <li>Complejidad de los algoritmos implementados</li>
+    <li>Pruebas: verificación y pruebas de estrés (10, 100 y 1000 nodos)</li>
+    <li>Demostración del sistema</li>
+    <li>Ventajas, desventajas y trabajo futuro</li>
+    <li>Conclusiones</li>
+    <li>Referencias</li>
+  </ol>
+</section>
+
+<h2>1. Problemática e indagación</h2>
+<p>En una arquitectura de microservicios o en un pipeline de datos hay decenas de tareas que comparten recursos: tablas de una base de datos con bloqueos, una API externa con límite de tasa, una cola con consumidor exclusivo o una ventana de migración. Si dos tareas que compiten por un recurso se ejecutan (o se despliegan) al mismo tiempo aparecen bloqueos, condiciones de carrera o errores de cuota. El equipo de plataforma necesita responder dos preguntas: <b>¿en cuántos lotes, como mínimo, puedo ejecutar todo sin conflictos?</b> y <b>¿cómo dibujo la arquitectura de forma legible?</b></p>
+<p>Ambas preguntas tienen una formulación exacta en teoría de grafos. La primera es el problema de <b>coloración de vértices</b>: si cada tarea es un vértice y cada conflicto una arista, una coloración propia reparte las tareas en clases independientes (nadie en la misma clase está en conflicto) y el mínimo número de clases es el <b>número cromático χ(G)</b>. Es la misma modelación que se usa para horarios de exámenes (Welsh y Powell, 1967), asignación de registros en compiladores o asignación de frecuencias. La segunda pregunta es de <b>planaridad</b>: un diagrama sin cruces existe si y solo si el grafo es plano (Kuratowski, 1930), y cuando no lo es, la técnica estándar de dibujo de grafos es la <b>planarización</b>, que reemplaza cada cruce por un vértice ficticio (Gutwenger, Mutzel y Weiskircher, 2005).</p>
+<p>El paso que falta es pasar de un requerimiento escrito en lenguaje natural a ese grafo. Para eso se usa un modelo de lenguaje (LLM) con <b>salida estructurada</b>: el modelo está obligado a responder con un JSON que cumple un esquema (vértices y aristas). La decisión de diseño central del proyecto es la separación de responsabilidades: <b>el LLM traduce e interpreta, pero toda la matemática la calculan algoritmos deterministas y verificables</b>. Así, χ(G), la planaridad y el dibujo no dependen de que el modelo "acierte" un cálculo.</p>
+
+<h2>2. Marco teórico</h2>
+<h3>2.1 Grafos y su representación</h3>
+<p>Un grafo simple no dirigido es un par G = (V, E) con E ⊆ {{u, v} : u, v ∈ V, u ≠ v}. El grado deg(v) es el número de aristas incidentes y Δ(G) el grado máximo.</p>
+<div class="thm"><b>Lema del apretón de manos.</b> Σ<sub>v∈V</sub> deg(v) = 2|E|, porque cada arista aporta exactamente 2 a la suma. El sistema lo usa para calcular |E| y lo muestra como verificación en el dashboard.</div>
+<p>Las dos representaciones clásicas son la <b>lista de adyacencia</b> (para cada vértice, el conjunto de sus vecinos; memoria Θ(V + E)) y la <b>matriz de adyacencia</b> A ∈ {0,1}<sup>V×V</sup> con A<sub>ij</sub> = 1 si {v<sub>i</sub>, v<sub>j</sub>} ∈ E (memoria Θ(V²), simétrica en grafos no dirigidos).</p>
+
+<h3>2.2 Coloración de vértices</h3>
+<p>Una k-coloración propia es una función c : V → {1, …, k} tal que c(u) ≠ c(v) para toda arista {u, v}. Cada clase de color es un <b>conjunto independiente</b>. El número cromático χ(G) es el menor k para el que existe una k-coloración propia. Decidir si χ(G) ≤ k es NP-completo para k ≥ 3 (Karp, 1972), por lo que en grafos grandes se usan heurísticas voraces junto con cotas:</p>
+<div class="thm"><b>Cotas.</b> ω(G) ≤ χ(G) ≤ Δ(G) + 1, donde ω(G) es el tamaño de la clique máxima (una clique de tamaño ω necesita ω colores distintos). <b>Teorema de Brooks (1941):</b> si G es conexo y no es completo ni un ciclo impar, χ(G) ≤ Δ(G). <b>Teorema de los cuatro colores (Appel y Haken, 1977):</b> si G es plano, χ(G) ≤ 4.</div>
+<p>Consecuencia práctica usada en el sistema: si una heurística obtiene k colores y se encuentra una clique de tamaño k, entonces χ(G) = k queda <b>certificado</b> sin necesidad de búsqueda exhaustiva.</p>
+<p><b>Welsh-Powell</b> ordena los vértices por grado descendente y asigna el color 1 a todo vértice de la lista no adyacente a los que ya tienen color 1; repite con el color 2, etc. Garantiza a lo sumo max<sub>i</sub> min(d<sub>i</sub> + 1, i) colores. <b>DSatur</b> (Brélaz, 1979) elige en cada paso el vértice no coloreado con mayor <i>grado de saturación</i> (número de colores distintos ya presentes entre sus vecinos), desempatando por grado, y le asigna el menor color disponible. Es exacto en grafos bipartitos y en la práctica usa menos colores que Welsh-Powell.</p>
+
+<h3>2.3 Grafos planos</h3>
+<p>Un grafo es <b>plano</b> si puede dibujarse en el plano sin que sus aristas se crucen; un dibujo así se llama <b>embedding plano</b> y divide el plano en F caras.</p>
+<div class="thm"><b>Fórmula de Euler.</b> Para un grafo plano conexo, V − E + F = 2. Como cada cara está acotada por al menos 3 aristas y cada arista bordea a lo sumo 2 caras, 3F ≤ 2E, de donde <b>E ≤ 3V − 6</b> (V ≥ 3). Si además no hay triángulos, 4F ≤ 2E y <b>E ≤ 2V − 4</b>. Así, K<sub>5</sub> (10 &gt; 9) y K<sub>3,3</sub> (9 &gt; 8) no son planos.</div>
+<div class="thm"><b>Teorema de Kuratowski (1930).</b> G es plano si y solo si no contiene un subgrafo que sea una subdivisión de K<sub>5</sub> o de K<sub>3,3</sub>. <b>Teorema de Fáry (1948):</b> todo grafo plano admite un embedding en el que todas las aristas son segmentos de recta.</div>
+<p>La condición de Euler es solo necesaria (un grafo puede cumplir E ≤ 3V − 6 y no ser plano, como K<sub>3,3</sub> con 9 ≤ 12). Para decidir con exactitud se usan algoritmos lineales: <b>Boyer-Myrvold</b> (2004, adición de aristas) o el <b>test Left-Right</b> de de Fraysseix y Rosenstiehl (formalizado por Brandes, 2009), ambos O(V). Para obtener coordenadas, <b>Chrobak y Payne</b> (1995) construyen en O(V) un dibujo con aristas rectas sobre una rejilla de (2V − 4) × (V − 2).</p>
+<p>El <b>grafo dual</b> G* de un embedding tiene un vértice por cada cara y una arista dual por cada arista primal que separa dos caras. Insertar una nueva arista u–v cruzando el mínimo de aristas del embedding equivale a un <b>camino mínimo en G*</b> entre las caras que tocan u y las que tocan v; cada arista dual del camino es un cruce, que se reemplaza por un vértice virtual. El grafo resultante es plano por construcción.</p>
+
+<h2>3. Arquitectura del sistema</h2>
+<div class="mermaid">
+flowchart TB
+  U["Usuario<br/>requerimiento en lenguaje natural"] --> W["visualization/<br/>Dashboard web<br/>(server.py + index.html)"]
+  W -- "POST /api/parse" --> A["ai_agent/<br/>LLM + JSON Schema"]
+  A -- "JSON vértices/aristas" --> V["Validación<br/>clean_graph()"]
+  V -- "POST /api/analyze" --> P["graph_core/pipeline.py"]
+  P --> G["Graph<br/>lista + matriz"]
+  P --> C["Coloración<br/>WP · DSatur · exacto"]
+  P --> PL["Planaridad<br/>LR · Kuratowski · embedding<br/>planarización (dual)"]
+  P -- "métricas χ(G), plano, lotes" --> R["ai_agent/<br/>reporte técnico (LLM)"]
+  P --> O["Orquestador asyncio<br/>generado"]
+  R --> W
+  O --> W
+  G -.-> B["benchmarks/<br/>pruebas de estrés"]
+</div>
+<p>El flujo tiene tres etapas, igual que el diagrama de la consigna: (1) el <b>agente IA</b> recibe el texto y devuelve un JSON forzado por esquema; el servidor lo valida (frontera de confianza); (2) el <b>motor algorítmico</b> construye la clase <code>Graph</code>, ejecuta la coloración y el análisis de planaridad y genera un orquestador ejecutable; (3) el <b>dashboard</b> dibuja el grafo con las coordenadas del embedding, colorea por lote, muestra métricas, y el LLM redacta un reporte a partir de las métricas calculadas.</p>
+<table>
+  <tr><th>Módulo</th><th>Archivos</th><th>Responsabilidad</th></tr>
+  <tr><td><code>graph_core/</code></td><td>graph.py, coloring.py, planarity.py, pipeline.py</td><td>Estructuras de datos y algoritmos (sin dependencias de IA).</td></tr>
+  <tr><td><code>ai_agent/</code></td><td>prompts.py, agent.py</td><td>Prompts, esquema JSON, llamadas al LLM y validación de su salida.</td></tr>
+  <tr><td><code>visualization/</code></td><td>server.py, static/index.html, examples.json</td><td>Servidor HTTP (biblioteca estándar) y dashboard interactivo (Cytoscape.js).</td></tr>
+  <tr><td><code>benchmarks/</code>, <code>tests/</code></td><td>stress_test.py, test_graph_core.py</td><td>Pruebas de estrés y pruebas automáticas del núcleo matemático.</td></tr>
+</table>
+
+<h2>4. Módulo 1 · Representación programática del grafo</h2>
+<p>La clase <code>Graph</code> mantiene <b>simultáneamente</b> ambas representaciones y las sincroniza en cada operación: <code>adj</code> (diccionario vértice → conjunto de vecinos) y <code>matrix</code> (lista de listas 0/1), más <code>index</code> (vértice → fila/columna) para traducir nombres a posiciones. Métodos: <code>add_vertex</code>, <code>remove_vertex</code>, <code>add_edge</code>, <code>remove_edge</code>, <code>has_edge</code>, <code>neighbors</code> (lista), <code>neighbors_matrix</code> (matriz), <code>degree</code>, <code>degrees</code>, <code>max_degree</code>, <code>to_dict</code>/<code>to_json</code>, <code>from_dict</code> y <code>to_networkx</code>.</p>
+<pre>def add_edge(self, u, v, **attrs):
+    """O(1): un set.add en la lista y dos celdas en la matriz."""
+    ...
+    self.adj[u].add(v); self.adj[v].add(u)
+    i, j = self.index[u], self.index[v]
+    self.matrix[i][j] = self.matrix[j][i] = 1</pre>
+<h3>Reto de ingeniería: O(V + E) frente a O(V²)</h3>
+<table>
+  <tr><th>Operación</th><th>Lista de adyacencia</th><th>Matriz de adyacencia</th></tr>
+  <tr><td>Memoria</td><td>Θ(V + E)</td><td>Θ(V²)</td></tr>
+  <tr><td>Agregar vértice</td><td>O(1)</td><td>O(V) (una fila y una columna)</td></tr>
+  <tr><td>Eliminar vértice</td><td>O(deg v)</td><td>O(V²) en el peor caso (reindexar)</td></tr>
+  <tr><td>Agregar / eliminar arista</td><td>O(1) esperado</td><td>O(1)</td></tr>
+  <tr><td>¿Existe la arista u–v?</td><td>O(1) esperado (conjunto hash)</td><td>O(1) peor caso</td></tr>
+  <tr><td>Recorrer vecinos de v</td><td>O(deg v)</td><td>O(V)</td></tr>
+  <tr><td>Recorrer todas las aristas</td><td>O(V + E)</td><td>O(V²)</td></tr>
+</table>
+<p>Los grafos de arquitecturas reales son <b>dispersos</b>: E crece linealmente con V (en nuestras pruebas E = 1.5V). En ese régimen la lista ocupa Θ(V) mientras que la matriz ocupa Θ(V²): con 1000 nodos la matriz ya pesa 8.2 MB frente a 0.32 MB de la lista (25 veces más), y con 100 000 nodos la matriz necesitaría 10<sup>10</sup> celdas (decenas de GB), lo que la hace inviable para <b>peticiones masivas</b>. Además, todos los algoritmos del sistema (Welsh-Powell, DSatur, BFS, test de planaridad) recorren vecinos, operación que cuesta O(deg v) con la lista y O(V) con la matriz, convirtiendo algoritmos O(V + E) en O(V²). Por eso los algoritmos usan la lista; la matriz se conserva porque responde <code>has_edge</code> en O(1) de peor caso y porque la consigna pide ambas estructuras. Para grafos densos (E ≈ V²) ambas ocupan Θ(V²) y la matriz es más compacta por arista.</p>
+
+<h2>5. Módulo 2 · Coloración para asignación de recursos</h2>
+<p><b>Modelo.</b> Vértice = tarea o microservicio; arista = conflicto (recurso compartido o dependencia directa): sus extremos no pueden ejecutarse a la vez; color = lote o slot de tiempo. Una coloración propia garantiza que dentro de un lote no hay conflictos, por lo que el lote puede ejecutarse completamente en paralelo, y los lotes se ejecutan en secuencia. Así, <b>χ(G) es el número mínimo de etapas</b> y el tamaño del lote más grande es el número de workers concurrentes necesarios.</p>
+<p>Se implementaron tres algoritmos en <code>coloring.py</code>:</p>
+<ul>
+  <li><b>Welsh-Powell</b>: orden por grado descendente; para cada color se recorre la lista y se agregan vértices no adyacentes a los ya coloreados con ese color (verificación por intersección de conjuntos).</li>
+  <li><b>DSatur</b> con un <i>heap</i> de prioridad (−saturación, −grado) y entradas perezosas: cuando cambia la saturación de un vértice se inserta una entrada nueva y las viejas se descartan al salir.</li>
+  <li><b>Coloración exacta</b> por backtracking para V ≤ 25: prueba k = ω, ω + 1, … hasta la cota de DSatur, ordenando por grado y con ruptura de simetría (cada vértice puede usar a lo sumo un color nuevo).</li>
+</ul>
+<p>El pipeline elige la mejor coloración disponible, reporta las cotas ω ≤ χ ≤ Δ + 1, verifica que la coloración sea propia y genera un <b>orquestador asyncio</b> en el que cada lote corre con <code>asyncio.gather</code> (código ejecutable optimizado).</p>
+
+<h2>6. Módulo 3 · Grafos planos y diagramación</h2>
+<ol>
+  <li><b>Condición de Euler</b> E ≤ 3V − 6 como filtro rápido (necesaria, no suficiente).</li>
+  <li><b>Test de planaridad</b> con <code>networkx.check_planarity</code>, que implementa el algoritmo Left-Right, de la misma familia y complejidad O(V) que Boyer-Myrvold. Si el grafo no es plano devuelve un <b>certificado de Kuratowski</b>; el sistema lo clasifica contando los vértices rama (grado ≥ 3): cinco vértices de grado 4 indican una subdivisión de K<sub>5</sub> y seis de grado 3, de K<sub>3,3</sub>.</li>
+  <li><b>Embedding plano</b>: Chrobak-Payne garantiza coordenadas (x, y) sin cruces en O(V). Como ese dibujo es poco legible, se aplica una <b>relajación de fuerzas tipo Fruchterman-Reingold que preserva la planaridad</b>: cada movimiento de un vértice se acepta solo si ninguna de sus aristas cruza otra y ningún vértice queda pegado a una arista. Como se parte de un dibujo sin cruces, el resultado tampoco tiene cruces.</li>
+  <li><b>Planarización</b> si el grafo no es plano: (a) se construye un <b>subgrafo plano maximal</b> agregando un bosque generador (siempre plano) y luego bloques de aristas con bisección: si un bloque rompe la planaridad se parte a la mitad; (b) cada arista removida se reinserta por un <b>camino mínimo (BFS) en el grafo dual</b> del embedding actual, y cada arista cruzada se divide con un <b>nodo virtual X<sub>k</sub></b> (bus/cruce). El grafo planarizado se verifica plano y se dibuja con el paso 3.</li>
+</ol>
+<pre>def _insert_edge(P, origin, u, v, virtual):
+    emb = nx.check_planarity(P)[1]          # embedding actual
+    face_of = _faces(emb)                    # semiarista -> cara
+    dual = {...}                             # cara -> [(cara vecina, arista primal)]
+    # BFS desde las caras que tocan u hasta las que tocan v
+    # cada arista primal cruzada a-b se reemplaza por a - X_k - b</pre>
+
+<h2>7. Módulo 4 · Capa de inteligencia artificial generativa</h2>
+<p><b>Entrada inteligente.</b> El usuario escribe, por ejemplo: <i>"Crea una arquitectura de microservicios para un e-commerce con procesamiento de pagos, inventario y notificaciones en tiempo real"</i>. El agente usa Claude (<code>claude-opus-5-5</code>) mediante el SDK oficial de Anthropic; si no hay clave de API usa Claude Code en modo headless (<code>claude -p --json-schema</code>), y si no hay LLM disponible, un parser offline por palabras clave para pruebas.</p>
+<p><b>Structured Output.</b> El prompt de sistema define qué es un vértice (gateway, servicio, worker, base de datos, caché, cola, externo) y qué es una arista (<code>dependency</code> si uno llama al otro, <code>conflict</code> si compiten por un recurso exclusivo, con el nombre del recurso). La respuesta se fuerza con <code>output_config.format = json_schema</code> y un esquema con <code>additionalProperties: false</code>, de modo que el modelo no puede devolver texto libre. Aun así, la salida se trata como dato no confiable: <code>clean_graph()</code> normaliza los ids, descarta lazos, aristas a nodos inexistentes y duplicados, y limita longitudes.</p>
+<pre>{"title": "...",
+ "nodes": [{"id": "payment_svc", "label": "Servicio de pagos", "type": "service", "description": "..."}],
+ "edges": [{"source": "payment_svc", "target": "orders_db", "kind": "conflict", "resource": "tabla orders"}]}</pre>
+<p><b>Síntesis e interpretación.</b> Después de la coloración y la planaridad, el sistema envía al LLM solo las <b>métricas calculadas</b> (χ(G), si es exacto, cotas, lotes, paralelismo máximo, planaridad, subgrafo de Kuratowski, nodos virtuales) con la instrucción explícita de no recalcularlas. El LLM redacta un reporte técnico en Markdown con diagnóstico, lotes, <b>infraestructura mínima recomendada</b> (slots = χ(G), workers = tamaño del lote mayor, qué separar en nodos distintos), diagrama y riesgos.</p>
+
+<h2>8. Complejidad de los algoritmos implementados</h2>
+<table>
+  <tr><th>Algoritmo</th><th>Tiempo</th><th>Espacio</th><th>Justificación</th></tr>
+  <tr><td>Construcción de <code>Graph</code></td><td>O(V² + E)</td><td>O(V² + E)</td><td>Cada <code>add_vertex</code> extiende la matriz en O(V); con solo la lista sería O(V + E).</td></tr>
+  <tr><td>Welsh-Powell</td><td>O(V log V + χ·(V + E))</td><td>O(V)</td><td>Ordenamiento + una pasada por color; cada pasada revisa cada vértice e intersecta su vecindad.</td></tr>
+  <tr><td>DSatur (heap)</td><td>O((V + E) log V)</td><td>O(V + E)</td><td>Cada arista provoca a lo sumo una inserción en el heap al cambiar una saturación.</td></tr>
+  <tr><td>Clique voraz (cota ω)</td><td>O(Σ deg(v)·ω)</td><td>O(V)</td><td>Por cada vértice se recorre su vecindad comprobando adyacencia con la clique.</td></tr>
+  <tr><td>χ(G) exacto</td><td>O(k<sup>V</sup>) peor caso</td><td>O(V)</td><td>Problema NP-difícil; solo se ejecuta con V ≤ 25.</td></tr>
+  <tr><td>Test de planaridad (LR / Boyer-Myrvold)</td><td>O(V)</td><td>O(V)</td><td>Si E &gt; 3V − 6 se rechaza de inmediato, así que E = O(V).</td></tr>
+  <tr><td>Certificado de Kuratowski</td><td>O(E·V)</td><td>O(V)</td><td>Se eliminan aristas mientras el grafo siga siendo no plano; solo para V ≤ 150.</td></tr>
+  <tr><td>Embedding Chrobak-Payne</td><td>O(V)</td><td>O(V)</td><td>Triangulación + orden canónico.</td></tr>
+  <tr><td>Relajación sin cruces</td><td>O(I·V·(V + Δ·E))</td><td>O(V)</td><td>I = 150 iteraciones; cada movimiento se valida contra todas las aristas. Solo V ≤ 60.</td></tr>
+  <tr><td>Subgrafo plano maximal</td><td>O(r·log E·V)</td><td>O(V + E)</td><td>r aristas rechazadas, cada una cuesta O(log E) tests lineales por la bisección.</td></tr>
+  <tr><td>Inserción por grafo dual</td><td>O(r·(V + X))</td><td>O(V + X)</td><td>Por arista: embedding + caras + BFS lineales en el grafo planarizado (X = nodos virtuales).</td></tr>
+</table>
+<p>Aunque la consigna menciona el Teorema de Kuratowski como verificación, buscar subdivisiones de K<sub>5</sub> o K<sub>3,3</sub> por fuerza bruta es exponencial; por eso el sistema decide la planaridad con el algoritmo lineal y usa Kuratowski como <b>certificado</b> de no planaridad, que es como lo usan Boyer-Myrvold y Left-Right.</p>
+
+<h2>9. Pruebas</h2>
+<h3>9.1 Pruebas automáticas (tests/test_graph_core.py)</h3>
+<ul>
+  <li><b>Estructura:</b> en el grafo de Petersen, Σ deg = 2|E|; la lista y la matriz devuelven los mismos vecinos antes y después de eliminar vértices y aristas; ida y vuelta por JSON y NetworkX.</li>
+  <li><b>Coloración:</b> 30 grafos aleatorios: ambas heurísticas producen coloraciones propias con a lo sumo Δ + 1 colores. Valores exactos: χ(K<sub>5</sub>) = 5, χ(C<sub>5</sub>) = 3, χ(C<sub>6</sub>) = 2, χ(K<sub>3,3</sub>) = 2, χ(Petersen) = 3.</li>
+  <li><b>Planaridad:</b> K<sub>5</sub> y K<sub>3,3</sub> se detectan con el tipo de Kuratowski correcto; para Petersen, un G(25, 0.3) y K<sub>7</sub>, el grafo planarizado es plano y su dibujo tiene <b>0 cruces</b> (contados geométricamente); rejilla 4×4, rueda W<sub>9</sub> y octaedro son planos y se dibujan sin nodos virtuales.</li>
+</ul>
+<h3>9.2 Pruebas de estrés</h3>
+<p>Grafos aleatorios G(n, m) de Erdős-Rényi con n ∈ {10, 100, 1000} y m = 1.5n (grado medio 3, como una arquitectura dispersa), semilla 42, en una MacBook (Apple Silicon, Python 3.12). Script: <code>python -m benchmarks.stress_test</code>.</p>
+<table>
+<tr><th>Métrica</th><th class="n">V = 10</th><th class="n">V = 100</th><th class="n">V = 1000</th></tr>
+<tr><td>Aristas E</td><td class="n">15</td><td class="n">150</td><td class="n">1 500</td></tr>
+<tr><td>Construcción lista + matriz (ms)</td><td class="n">0.065</td><td class="n">0.506</td><td class="n">20.43</td></tr>
+<tr><td>Memoria lista (KB)</td><td class="n">2.4</td><td class="n">33.8</td><td class="n">327.4</td></tr>
+<tr><td>Memoria matriz (KB)</td><td class="n">1.8</td><td class="n">91.0</td><td class="n">8 372.1</td></tr>
+<tr><td>Vecinos con lista (µs por vértice)</td><td class="n">0.20</td><td class="n">0.06</td><td class="n">0.054</td></tr>
+<tr><td>Vecinos con matriz (µs por vértice)</td><td class="n">0.90</td><td class="n">2.03</td><td class="n">23.96</td></tr>
+<tr><td><code>has_edge</code> con matriz (µs)</td><td class="n">0.155</td><td class="n">0.132</td><td class="n">0.231</td></tr>
+<tr><td>Δ(G) / cota inferior ω</td><td class="n">4 / 3</td><td class="n">7 / 3</td><td class="n">10 / 3</td></tr>
+<tr><td>Welsh-Powell: colores (ms)</td><td class="n">3 (0.020)</td><td class="n">4 (0.125)</td><td class="n">4 (1.128)</td></tr>
+<tr><td>DSatur: colores (ms)</td><td class="n">3 (0.044)</td><td class="n">3 (0.309)</td><td class="n">3 (2.95)</td></tr>
+<tr><td>χ(G)</td><td class="n">3 (exacto)</td><td class="n">3 (certificado ω = 3)</td><td class="n">3 (certificado ω = 3)</td></tr>
+<tr><td>¿Plano? / E ≤ 3V − 6</td><td class="n">sí / sí</td><td class="n">no / sí</td><td class="n">no / sí</td></tr>
+<tr><td>Test de planaridad (ms)</td><td class="n">0.567</td><td class="n">1.044</td><td class="n">9.80</td></tr>
+<tr><td>Aristas reinsertadas / nodos virtuales</td><td class="n">0 / 0</td><td class="n">33 / 139</td><td class="n">473 / 17 410</td></tr>
+<tr><td>Planarización + embedding (ms)</td><td class="n">41.2</td><td class="n">239.9</td><td class="n">185 277 (≈ 3.1 min)</td></tr>
+</table>
+<figure><img src="bench_chart.png"><figcaption>Figura 1. Tiempo por etapa (izquierda) y memoria por representación (derecha), escalas logarítmicas.</figcaption></figure>
+<p><b>Análisis.</b></p>
+<ul>
+  <li><b>Memoria:</b> la matriz crece 92× al pasar de 100 a 1000 nodos (cuadrático) y la lista 9.7× (lineal). Con 1000 nodos la matriz ocupa 25 veces más.</li>
+  <li><b>Vecinos:</b> con la lista el costo por vértice se mantiene constante (≈ 0.05 µs, depende del grado), con la matriz crece linealmente con V (24 µs con 1000 nodos, 440 veces más lento). <code>has_edge</code> con la matriz se mantiene en O(1).</li>
+  <li><b>Coloración:</b> ambas heurísticas escalan casi linealmente (DSatur colorea 1000 nodos en 3 ms). DSatur siempre alcanzó la cota ω = 3, así que χ(G) = 3 quedó certificado aun sin backtracking; Welsh-Powell usó un color de más en los grafos grandes.</li>
+  <li><b>Planaridad:</b> el test lineal decide 1000 nodos en 10 ms. Los grafos de 100 y 1000 nodos <b>cumplen la condición de Euler y aun así no son planos</b>, lo que ilustra que E ≤ 3V − 6 es solo necesaria.</li>
+  <li><b>Cuello de botella:</b> la planarización. Un grafo aleatorio no tiene estructura geométrica, así que las 473 aristas que no caben en el subgrafo plano generan 17 410 cruces y el grafo planarizado crece a más de 18 000 vértices; como cada inserción recalcula el embedding, el costo total es O(r·(V + X)) ≈ 3 minutos. Para arquitecturas reales (casi planas, 10–50 nodos) el paso completo tarda menos de 0.1 s.</li>
+</ul>
+
+<h2>10. Demostración del sistema</h2>
+<figure><img src="img/dashboard_ecommerce.png"><figcaption>Figura 2. Requerimiento de e-commerce: el LLM generó el grafo, el embedding plano se dibuja sin cruces, los colores son los lotes y a la derecha está el reporte técnico.</figcaption></figure>
+<figure><img src="img/dashboard_k33.png"><figcaption>Figura 3. Servicios bancarios con tres bases de datos compartidas: el sistema detecta una subdivisión de K<sub>3,3</sub> (vista Kuratowski) y la planariza con un nodo virtual.</figcaption></figure>
+<p>Además del grafo, el dashboard muestra el pipeline con el tiempo de cada etapa, las métricas (χ(G) con sus cotas, Σ deg = 2|E|, Euler, Kuratowski, nodos virtuales), la comparación Welsh-Powell / DSatur / óptimo, el JSON del LLM (exportable), el orquestador generado (descargable) y las pruebas de estrés.</p>
+
+<h2>11. Ventajas, desventajas y trabajo futuro</h2>
+<div class="two">
+<div><h3>Ventajas</h3><ul>
+  <li>Resultados deterministas y verificables: la coloración se comprueba propia y el dibujo se comprueba sin cruces.</li>
+  <li>El LLM no calcula: solo traduce y explica, lo que evita alucinaciones numéricas.</li>
+  <li>Algoritmos escalables: lista O(V + E), DSatur O((V + E) log V), test de planaridad O(V).</li>
+  <li>χ(G) exacto en grafos pequeños o certificado con la cota ω.</li>
+  <li>Funciona con API de Claude, CLI de Claude o sin red.</li>
+</ul></div>
+<div><h3>Desventajas</h3><ul>
+  <li>χ(G) exacto es NP-difícil: en grafos grandes solo hay cota superior (salvo certificado por ω).</li>
+  <li>La planarización de grafos grandes y aleatorios es costosa (≈ 3 min con 1000 nodos).</li>
+  <li>La matriz de adyacencia ocupa O(V²) memoria.</li>
+  <li>El grafo depende de la calidad del LLM: puede omitir o inventar conflictos.</li>
+  <li>Las aristas no son dirigidas: el sistema no modela el orden de precedencia entre lotes.</li>
+</ul></div>
+</div>
+<p><b>Trabajo futuro:</b> modelar dependencias como grafo dirigido acíclico y combinar orden topológico con coloración; actualizar el embedding de forma incremental en la planarización; usar una matriz dispersa o de bits; agregar Tutte embedding para grafos 3-conexos.</p>
+
+<h2>12. Conclusiones</h2>
+<p>El proyecto muestra que tres objetos de la matemática discreta (la coloración de vértices, los grafos planos y la representación de grafos) resuelven problemas concretos de ingeniería de software: el número cromático da el número mínimo de lotes de ejecución sin conflictos, la teoría de planaridad (Euler, Kuratowski, Fáry, grafo dual) permite dibujar arquitecturas sin cruces o explicar por qué no es posible, y el análisis de complejidad justifica usar listas de adyacencia en sistemas grandes. La IA generativa aporta la interfaz en lenguaje natural y la redacción del reporte, mientras que la corrección queda garantizada por algoritmos con propiedades demostradas y verificadas con pruebas automáticas.</p>
+
+<h2>13. Referencias</h2>
+<div class="ref">
+<p>Anthropic. (2026). <i>Structured outputs</i> [Documentación de la API de Claude]. https://platform.claude.com/docs</p>
+<p>Appel, K., &amp; Haken, W. (1977). Every planar map is four colorable. <i>Illinois Journal of Mathematics, 21</i>(3), 429–567.</p>
+<p>Boyer, J. M., &amp; Myrvold, W. J. (2004). On the cutting edge: Simplified O(n) planarity by edge addition. <i>Journal of Graph Algorithms and Applications, 8</i>(3), 241–273.</p>
+<p>Brandes, U. (2009). <i>The left-right planarity test</i>. Universität Konstanz.</p>
+<p>Brélaz, D. (1979). New methods to color the vertices of a graph. <i>Communications of the ACM, 22</i>(4), 251–256.</p>
+<p>Brooks, R. L. (1941). On colouring the nodes of a network. <i>Mathematical Proceedings of the Cambridge Philosophical Society, 37</i>(2), 194–197.</p>
+<p>Chrobak, M., &amp; Payne, T. H. (1995). A linear-time algorithm for drawing a planar graph on a grid. <i>Information Processing Letters, 54</i>(4), 241–246.</p>
+<p>de Fraysseix, H., Ossona de Mendez, P., &amp; Rosenstiehl, P. (2006). Trémaux trees and planarity. <i>International Journal of Foundations of Computer Science, 17</i>(5), 1017–1029.</p>
+<p>Fáry, I. (1948). On straight line representation of planar graphs. <i>Acta Scientiarum Mathematicarum (Szeged), 11</i>, 229–233.</p>
+<p>Fruchterman, T. M. J., &amp; Reingold, E. M. (1991). Graph drawing by force-directed placement. <i>Software: Practice and Experience, 21</i>(11), 1129–1164.</p>
+<p>Gutwenger, C., Mutzel, P., &amp; Weiskircher, R. (2005). Inserting an edge into a planar graph. <i>Algorithmica, 41</i>(4), 289–308.</p>
+<p>Hagberg, A. A., Schult, D. A., &amp; Swart, P. J. (2008). Exploring network structure, dynamics, and function using NetworkX. En <i>Proceedings of the 7th Python in Science Conference</i> (pp. 11–15).</p>
+<p>Karp, R. M. (1972). Reducibility among combinatorial problems. En R. E. Miller &amp; J. W. Thatcher (Eds.), <i>Complexity of Computer Computations</i> (pp. 85–103). Plenum.</p>
+<p>Kuratowski, K. (1930). Sur le problème des courbes gauches en topologie. <i>Fundamenta Mathematicae, 15</i>, 271–283.</p>
+<p>Rosen, K. H. (2019). <i>Discrete mathematics and its applications</i> (8.ª ed.). McGraw-Hill.</p>
+<p>Welsh, D. J. A., &amp; Powell, M. B. (1967). An upper bound for the chromatic number of a graph and its application to timetabling problems. <i>The Computer Journal, 10</i>(1), 85–86.</p>
+</div>
+<script>mermaid.initialize({startOnLoad:true, theme:"neutral", flowchart:{curve:"basis"}});</script>
+</body>
+</html>

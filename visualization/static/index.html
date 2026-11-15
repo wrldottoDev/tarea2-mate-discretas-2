@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GrafoOps · Motor IA de grafos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+:root{
+  --bg:#0b0f17; --panel:#111827; --panel2:#0f1522; --line:#1f2a3c; --text:#e5e9f0; --muted:#8b96a8;
+  --accent:#5eead4; --accent2:#818cf8; --ok:#4ade80; --bad:#fb7185; --warn:#fbbf24;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14px/1.45 'IBM Plex Sans',system-ui,sans-serif}
+header{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,#0d1424,#0b0f17)}
+.logo{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0b0f17;font-weight:700}
+header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.2px}
+header h1 small{display:block;font-size:12px;color:var(--muted);font-weight:400}
+.badge{margin-left:auto;font:12px var(--mono);color:var(--muted);border:1px solid var(--line);padding:5px 10px;border-radius:999px}
+.badge b{color:var(--accent)}
+main{display:grid;grid-template-columns:360px 1fr 470px;height:calc(100vh - 57px)}
+aside,section{min-height:0}
+.left{border-right:1px solid var(--line);padding:16px;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.right{border-left:1px solid var(--line);display:flex;flex-direction:column;min-width:0}
+h2{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:600}
+textarea{width:100%;height:118px;resize:vertical;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:13px/1.5 'IBM Plex Sans',sans-serif;outline:none}
+textarea:focus{border-color:var(--accent2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 10px}
+.chip{font-size:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:4px 10px;border-radius:999px;cursor:pointer}
+.chip:hover{border-color:var(--accent)}
+button.run{width:100%;padding:11px;border:0;border-radius:10px;font:600 14px 'IBM Plex Sans';color:#0b0f17;background:linear-gradient(90deg,var(--accent),var(--accent2));cursor:pointer}
+button.run:disabled{opacity:.55;cursor:progress}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.steps li{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);font-size:13px}
+.steps .dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font-size:11px}
+.steps li.run .dot{border-color:var(--accent2);border-top-color:transparent;animation:spin .8s linear infinite}
+.steps li.done .dot{border-color:var(--ok);background:var(--ok);color:#0b0f17}
+.steps li.done .dot::after{content:"✓";font-weight:700}
+.steps li.err .dot{border-color:var(--bad);background:var(--bad)}
+.steps .t{margin-left:auto;font:12px var(--mono);color:var(--muted)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.m{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.m span{display:block;font-size:11px;color:var(--muted)}
+.m b{font:600 18px var(--mono)}
+.m.big{grid-column:span 2;display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(94,234,212,.08),rgba(129,140,248,.08))}
+.m.big b{font-size:34px;color:var(--accent)}
+.m.big div{font-size:12px;color:var(--muted)}
+.yes{color:var(--ok)} .no{color:var(--bad)}
+.center{display:flex;flex-direction:column;min-width:0}
+.toolbar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.toolbar h3{margin:0;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;flex:none}
+.seg button{background:none;border:0;color:var(--muted);padding:6px 11px;font:500 12px 'IBM Plex Sans';cursor:pointer}
+.seg button.on{background:var(--panel);color:var(--text)}
+#cy{flex:1;background:radial-gradient(circle at 50% 40%,#111a2b 0,#0b0f17 70%);position:relative}
+.empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);text-align:center;pointer-events:none}
+.legend{display:flex;flex-wrap:wrap;gap:12px;padding:9px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);min-height:38px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.tabs{display:flex;border-bottom:1px solid var(--line);padding:0 8px}
+.tabs button{background:none;border:0;color:var(--muted);padding:12px 12px;font:500 13px 'IBM Plex Sans';cursor:pointer;border-bottom:2px solid transparent}
+.tabs button.on{color:var(--text);border-bottom-color:var(--accent)}
+.pane{display:none;padding:16px;overflow:auto;flex:1}
+.pane.on{display:block}
+.lot{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:var(--panel2)}
+.lot header{all:unset;display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;margin-bottom:8px}
+.lot header i{width:12px;height:12px;border-radius:3px}
+.lot header span{margin-left:auto;color:var(--muted);font-weight:400;font-size:12px}
+.tag{display:inline-block;font:12px var(--mono);padding:3px 8px;border-radius:6px;margin:0 5px 5px 0;background:#182235;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:500}
+pre{margin:0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;font:12px/1.55 var(--mono);overflow:auto;white-space:pre}
+.hljs{background:transparent!important;color:#c9d1d9}
+.hljs-keyword{color:#ff7b72}.hljs-string{color:#a5d6ff}.hljs-comment{color:#8b949e}.hljs-title,.hljs-built_in{color:#d2a8ff}.hljs-number{color:#79c0ff}
+.report{font-size:13.5px;line-height:1.6}
+.report h3{font-size:13px;letter-spacing:.4px;color:var(--accent);margin:16px 0 6px;text-transform:uppercase}
+.report h3:first-child{margin-top:0}
+.report ul{padding-left:18px;margin:6px 0}
+.report code{font:12px var(--mono);background:#182235;padding:1px 5px;border-radius:5px}
+.btn2{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font:500 12px 'IBM Plex Sans';cursor:pointer;margin-bottom:10px}
+.muted{color:var(--muted)}
+.err{color:var(--bad);font-size:13px}
+img.chart{width:100%;border-radius:10px;margin-top:12px;background:#fff}
+@media (max-width:1100px){main{grid-template-columns:1fr;height:auto}#cy{height:60vh}.left,.right{border:0}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">G</div>
+  <h1>GrafoOps<small>Motor IA de Planificación y Orquestación basado en Grafos</small></h1>
+  <div class="badge" id="badge">LLM: …</div>
+</header>
+<main>
+  <aside class="left">
+    <div>
+      <h2>Requerimiento en lenguaje natural</h2>
+      <textarea id="req" placeholder="Describe el sistema…"></textarea>
+      <div class="chips" id="chips"></div>
+      <button class="run" id="run">Analizar con IA + grafos</button>
+    </div>
+    <div>
+      <h2>Pipeline</h2>
+      <ol class="steps" id="steps">
+        <li data-s="parse"><span class="dot"></span>Agente IA → JSON<span class="t"></span></li>
+        <li data-s="graph"><span class="dot"></span>Grafo (lista + matriz)<span class="t"></span></li>
+        <li data-s="color"><span class="dot"></span>Coloración (lotes)<span class="t"></span></li>
+        <li data-s="planar"><span class="dot"></span>Planaridad + embedding<span class="t"></span></li>
+        <li data-s="report"><span class="dot"></span>Reporte técnico IA<span class="t"></span></li>
+      </ol>
+    </div>
+    <div>
+      <h2>Métricas</h2>
+      <div class="metrics" id="metrics">
+        <div class="m big"><b id="m-chi">–</b><div>número cromático χ(G)<br><span id="m-bounds">ω ≤ χ ≤ Δ+1</span></div></div>
+        <div class="m"><span>Vértices |V|</span><b id="m-v">–</b></div>
+        <div class="m"><span>Aristas |E|</span><b id="m-e">–</b></div>
+        <div class="m"><span>Grado máximo Δ</span><b id="m-d">–</b></div>
+        <div class="m"><span>Σ grados = 2|E|</span><b id="m-hs">–</b></div>
+        <div class="m"><span>Welsh-Powell</span><b id="m-wp">–</b></div>
+        <div class="m"><span>DSatur</span><b id="m-ds">–</b></div>
+        <div class="m"><span>¿Plano?</span><b id="m-pl">–</b></div>
+        <div class="m"><span>E ≤ 3V − 6</span><b id="m-eu">–</b></div>
+        <div class="m"><span>Kuratowski</span><b id="m-k">–</b></div>
+        <div class="m"><span>Nodos virtuales</span><b id="m-x">–</b></div>
+      </div>
+    </div>
+  </aside>
+
+  <section class="center">
+    <div class="toolbar">
+      <h3 id="title">Grafo de recursos</h3>
+      <div class="seg" id="view">
+        <button data-v="lotes" class="on">Lotes (colores)</button>
+        <button data-v="tipo">Tipo de componente</button>
+        <button data-v="kura">Kuratowski</button>
+      </div>
+    </div>
+    <div id="cy"><div class="empty" id="empty">Escribe un requerimiento y presiona <b>&nbsp;Analizar&nbsp;</b></div></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <aside class="right">
+    <nav class="tabs" id="tabs">
+      <button data-t="lotes" class="on">Lotes</button>
+      <button data-t="reporte">Reporte IA</button>
+      <button data-t="json">JSON</button>
+      <button data-t="codigo">Código</button>
+      <button data-t="estres">Estrés</button>
+    </nav>
+    <div class="pane on" id="p-lotes"><p class="muted">Aquí aparecerán los lotes de ejecución en paralelo.</p></div>
+    <div class="pane report" id="p-reporte"><p class="muted">El LLM redactará el reporte a partir de las métricas.</p></div>
+    <div class="pane" id="p-json"><p class="muted">Salida estructurada del LLM.</p></div>
+    <div class="pane" id="p-codigo"><p class="muted">Orquestador generado a partir de la coloración.</p></div>
+    <div class="pane" id="p-estres"></div>
+  </aside>
+</main>
+
+<script>
+const PALETTE = ["#2dd4bf","#fbbf24","#a78bfa","#fb7185","#38bdf8","#a3e635","#fb923c","#f472b6","#94a3b8","#facc15"];
+const TYPE_COLOR = {gateway:"#818cf8",frontend:"#38bdf8",service:"#2dd4bf",worker:"#a3e635",database:"#fbbf24",cache:"#fb923c",queue:"#f472b6",external:"#94a3b8"};
+const SHAPE = {gateway:"hexagon",frontend:"round-rectangle",service:"round-rectangle",worker:"round-octagon",database:"barrel",cache:"round-diamond",queue:"round-tag",external:"round-pentagon"};
+const $ = s => document.querySelector(s);
+let cy, result, graphJson, view = "lotes";
+
+async function api(path, body){
+  const r = await fetch(path, body ? {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)} : {});
+  const j = await r.json();
+  if (j.error) throw new Error(j.error);
+  return j;
+}
+
+function step(name, state, secs){
+  const li = $(`#steps li[data-s="${name}"]`);
+  li.className = state;
+  li.querySelector(".t").textContent = secs != null ? `${secs < 1 ? (secs*1000).toFixed(1)+" ms" : secs.toFixed(1)+" s"}` : "";
+}
+
+function tab(t){
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  document.querySelectorAll(".pane").forEach(p => p.classList.toggle("on", p.id === "p-"+t));
+}
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => tab(b.dataset.t));
+document.querySelectorAll("#view button").forEach(b => b.onclick = () => setView(b.dataset.v));
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function run(){
+  const text = $("#req").value.trim();
+  if (!text) return;
+  $("#run").disabled = true;
+  document.querySelectorAll("#steps li").forEach(li => {li.className = ""; li.querySelector(".t").textContent = ""});
+  try{
+    step("parse","run");
+    const p = await api("/api/parse", {text});
+    graphJson = p.graph;
+    step("parse","done", p.seconds);
+    renderJson();
+    step("graph","run");
+    const a = await api("/api/analyze", {graph: graphJson});
+    result = a;
+    step("graph","done", a.build_ms/1000);
+    step("color","done", (a.coloring.welsh_powell.ms + a.coloring.dsatur.ms + a.coloring.exact_ms)/1000);
+    step("planar","done", a.planarity.ms/1000);
+    renderMetrics(); renderGraph(); renderLots(); renderCode();
+    await animateColoring();
+    step("report","run");
+    const rep = await api("/api/report", {text, summary: a.summary});
+    step("report","done", rep.seconds);
+    $("#p-reporte").innerHTML = marked.parse(rep.report);
+    tab("reporte");
+  }catch(e){
+    const li = document.querySelector("#steps li.run");
+    if (li) li.className = "err";
+    $("#p-reporte").innerHTML = `<p class="err">${e.message}</p>`;
+    tab("reporte");
+  }finally{ $("#run").disabled = false; }
+}
+$("#run").onclick = run;
+
+function renderMetrics(){
+  const s = result.stats, c = result.coloring, p = result.planarity;
+  $("#m-chi").textContent = c.chi;
+  $("#m-bounds").textContent = `${c.lower_bound} ≤ χ ≤ ${c.upper_bound}  ·  ${c.chi_exact ? "exacto" : "cota DSatur"}`;
+  $("#m-v").textContent = s.V; $("#m-e").textContent = s.E; $("#m-d").textContent = s.max_degree;
+  $("#m-hs").textContent = `${s.degree_sum} = ${2*s.E}`;
+  $("#m-wp").textContent = `${c.welsh_powell.k} colores`; $("#m-ds").textContent = `${c.dsatur.k} colores`;
+  $("#m-pl").innerHTML = p.planar ? '<span class="yes">Sí</span>' : '<span class="no">No</span>';
+  $("#m-eu").innerHTML = `<span class="${p.euler_ok?'yes':'no'}">${s.E} ≤ ${p.euler_bound}</span>`;
+  $("#m-k").textContent = p.kuratowski || "—";
+  $("#m-x").textContent = p.virtual_nodes.length;
+  $("#title").textContent = graphJson.title;
+}
+
+function renderGraph(){
+  $("#empty").style.display = "none";
+  const p = result.planarity, W = $("#cy").clientWidth, H = $("#cy").clientHeight;
+  const nodes = result.graph.nodes.map(n => ({data:{id:n.id, label:n.label || n.id, type:n.type || "service", desc:n.description}}));
+  p.virtual_nodes.forEach(x => nodes.push({data:{id:x, label:x, virtual:1}}));
+  const kura = new Set((p.kuratowski_edges||[]).map(e => [...e].sort().join("|")));
+  const kind = {}; result.graph.edges.forEach(e => kind[[e.source,e.target].sort().join("|")] = e);
+  const edges = p.segments.map((s,i) => {
+    const key = [...s.original].sort().join("|"), e = kind[key] || {};
+    return {data:{id:"e"+i, source:s.source, target:s.target, kind:e.kind || "dependency", res:e.resource || "", rerouted:s.rerouted?1:0, kura:kura.has(key)?1:0}};
+  });
+  if (cy) cy.destroy();
+  cy = cytoscape({
+    container: $("#cy"), elements:{nodes, edges}, wheelSensitivity:.2,
+    layout:{name:"preset", positions: n => ({x:p.positions[n.id()][0]*W, y:p.positions[n.id()][1]*H}), padding:50},
+    style:[
+      {selector:"node", style:{"label":"data(label)","color":"#e5e9f0","font-family":"IBM Plex Sans","font-size":12,"font-weight":600,
+        "text-valign":"bottom","text-margin-y":7,"text-outline-color":"#0b0f17","text-outline-width":3,
+        "width":34,"height":34,"background-color":"#334155","border-width":2,"border-color":"#0b0f17",
+        "shape": n => SHAPE[n.data("type")] || "ellipse","transition-property":"background-color","transition-duration":"450ms"}},
+      {selector:"node[virtual]", style:{"shape":"diamond","width":13,"height":13,"background-color":"#64748b","font-size":9,"color":"#94a3b8","text-margin-y":3,"border-width":0}},
+      {selector:"edge", style:{"width":2,"line-color":"#3b4a63","curve-style":"straight","opacity":.95}},
+      {selector:"edge[kind='conflict']", style:{"line-style":"dashed","line-color":"#e2627a","line-dash-pattern":[7,5]}},
+      {selector:"edge[rerouted=1]", style:{"line-color":"#fbbf24","line-style":"dotted","width":2.4}},
+      {selector:".dim", style:{"opacity":.15}},
+      {selector:"edge.k", style:{"line-color":"#fb7185","width":4,"line-style":"solid","opacity":1}},
+      {selector:"node.k", style:{"border-color":"#fb7185","border-width":4}},
+    ]
+  });
+  cy.fit(undefined, 50);
+  setView("lotes", true);
+}
+
+function colorOf(id){ const c = result.coloring.colors[id]; return c == null ? null : PALETTE[c % PALETTE.length]; }
+
+async function animateColoring(){
+  const lots = result.coloring.batches;
+  cy.nodes("[!virtual]").style("background-color","#334155");
+  for (let i = 0; i < lots.length; i++){
+    await sleep(550);
+    lots[i].forEach(id => cy.$id(id).style("background-color", PALETTE[i % PALETTE.length]));
+    document.querySelectorAll(".lot")[i]?.animate([{background:"#1b2a44"},{background:"transparent"}],{duration:900});
+  }
+}
+
+function setView(v, silent){
+  view = v;
+  document.querySelectorAll("#view button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
+  if (!cy) return;
+  cy.elements().removeClass("dim k");
+  const lg = $("#legend");
+  if (v === "lotes"){
+    if (!silent) cy.nodes("[!virtual]").forEach(n => n.style("background-color", colorOf(n.id())));
+    lg.innerHTML = result.coloring.batches.map((b,i) => `<span><i style="background:${PALETTE[i%PALETTE.length]}"></i>Lote ${i+1} (${b.length})</span>`).join("")
+      + `<span><i style="background:#e2627a"></i>conflicto (- -)</span>` + (result.planarity.virtual_nodes.length ? `<span><i style="background:#fbbf24"></i>reenrutada vía nodo virtual</span>`:"");
+  } else if (v === "tipo"){
+    cy.nodes("[!virtual]").forEach(n => n.style("background-color", TYPE_COLOR[n.data("type")] || "#64748b"));
+    lg.innerHTML = Object.entries(TYPE_COLOR).map(([t,c]) => `<span><i style="background:${c}"></i>${t}</span>`).join("");
+  } else {
+    const p = result.planarity;
+    if (!p.kuratowski){ lg.innerHTML = `<span class="yes">Grafo plano: no existe subgrafo homeomorfo a K5 ni K3,3 (Kuratowski).</span>`; return; }
+    const br = new Set(p.kuratowski_branch);
+    cy.elements().addClass("dim");
+    cy.edges("[kura=1]").removeClass("dim").addClass("k").connectedNodes().removeClass("dim");
+    cy.nodes().filter(n => br.has(n.id())).addClass("k");
+    lg.innerHTML = `<span class="no">Subdivisión de ${p.kuratowski} encontrada → el grafo no es plano. Vértices rama: ${p.kuratowski_branch.join(", ")}</span>`;
+  }
+}
+
+function renderLots(){
+  const c = result.coloring, lbl = {}; result.graph.nodes.forEach(n => lbl[n.id] = n.label || n.id);
+  $("#p-lotes").innerHTML = `
+    <table style="margin-bottom:14px"><tr><th>Algoritmo</th><th>Colores</th><th>Tiempo</th><th>Propia</th></tr>
+      <tr><td>Welsh-Powell</td><td>${c.welsh_powell.k}</td><td>${c.welsh_powell.ms} ms</td><td class="yes">✓</td></tr>
+      <tr><td>DSatur</td><td>${c.dsatur.k}</td><td>${c.dsatur.ms} ms</td><td class="yes">✓</td></tr>
+      <tr><td>Óptimo (backtracking)</td><td>${c.chi_exact ? c.chi : "—"}</td><td>${c.chi_exact ? c.exact_ms+" ms" : "V > 25"}</td><td class="yes">${c.chi_exact?"✓":""}</td></tr>
+    </table>
+    <p class="muted" style="margin:0 0 12px">${c.batches.length} lotes secuenciales · hasta ${c.max_parallel} tareas en paralelo · usado: <b>${c.chosen}</b></p>`
+    + c.batches.map((b,i) => `<div class="lot"><header><i style="background:${PALETTE[i%PALETTE.length]}"></i>Lote ${i+1}<span>${b.length} en paralelo</span></header>${b.map(id => `<span class="tag">${lbl[id]}</span>`).join("")}</div>`).join("");
+}
+
+function download(name, text){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], {type:"text/plain"}));
+  a.download = name; a.click();
+}
+
+function renderJson(){
+  const txt = JSON.stringify(graphJson, null, 2);
+  $("#p-json").innerHTML = `<button class="btn2" id="dl-json">Exportar JSON</button><pre>${hljs.highlight(txt,{language:"json"}).value}</pre>`;
+  $("#dl-json").onclick = () => download("grafo.json", txt);
+}
+
+function renderCode(){
+  $("#p-codigo").innerHTML = `<button class="btn2" id="dl-code">Descargar orquestador.py</button><pre>${hljs.highlight(result.code,{language:"python"}).value}</pre>`;
+  $("#dl-code").onclick = () => download("orquestador.py", result.code);
+}
+
+async function renderBench(){
+  const rows = await api("/api/bench");
+  if (!rows.length){ $("#p-estres").innerHTML = '<p class="muted">Ejecuta <code>python -m benchmarks.stress_test</code></p>'; return; }
+  const f = [["Vértices","n"],["Aristas","m"],["Construcción (ms)","build_ms"],["Memoria lista (KB)","mem_list_kb"],["Memoria matriz (KB)","mem_matrix_kb"],
+    ["Vecinos lista (µs)","neighbors_list_us"],["Vecinos matriz (µs)","neighbors_matrix_us"],["Welsh-Powell (colores)","wp_colors"],["Welsh-Powell (ms)","wp_ms"],
+    ["DSatur (colores)","dsatur_colors"],["DSatur (ms)","dsatur_ms"],["¿Plano?","planar"],["Test planaridad (ms)","planarity_test_ms"],["Nodos virtuales","virtual_nodes"],["Planarización (ms)","planarize_ms"]];
+  const fmt = v => v === true ? "sí" : v === false ? "no" : (typeof v === "number" ? v.toLocaleString("es") : v);
+  $("#p-estres").innerHTML = `<table><tr><th>Métrica</th>${rows.map(r => `<th>V=${r.n}</th>`).join("")}</tr>${f.map(([l,k]) => `<tr><td>${l}</td>${rows.map(r => `<td>${fmt(r[k])}</td>`).join("")}</tr>`).join("")}</table><img class="chart" src="/bench_chart.png" alt="Gráfico de pruebas de estrés">`;
+}
+
+(async () => {
+  const cfg = await api("/api/config");
+  $("#badge").innerHTML = `LLM: <b>${cfg.provider}</b> · ${cfg.model}`;
+  $("#chips").innerHTML = cfg.examples.map((e,i) => `<button class="chip" data-i="${i}">${e.name}</button>`).join("");
+  document.querySelectorAll(".chip").forEach(b => b.onclick = () => $("#req").value = cfg.examples[b.dataset.i].text);
+  $("#req").value = cfg.examples[0].text;
+  renderBench();
+})();
+</script>
+</body>
+</html>
